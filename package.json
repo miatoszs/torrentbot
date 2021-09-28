@@ -1,13 +1,10 @@
 {
-  "name": "evobot",
-  "version": "0.15.2",
-  "description": "Discord music bot built with discord.js",
+  "name": "torrent-bot",
+  "version": "2.1.2",
+  "description": "torrent bot with music functions",
   "main": "index.js",
-  "author": "Erit Islami <eritislami@gmail.com>",
-  "private": true,
-  "homepage": "https://github.com/eritislami/evobot",
-  "repository": "github:eritislami/evobot",
-  "bugs": "https://github.com/eritislami/evobot/issues",
+  "author": "Áldó",
+  "repository": "github:miatoszs/torrentbot",
   "engines": {
     "node": ">=14.0.0"
   },
@@ -24,6 +21,8 @@
     "mal-scraper": "^2.11.3",
     "moment": "^2.29.1",
     "moment-duration-format": "^2.3.2",
+    "node-opus": "^0.3.3",
+    "opusscript": "0.0.8",
     "simple-youtube-api": "^5.1.1",
     "soundcloud-downloader": "^0.2.3",
     "string-progressbar": "^1.0.4",
@@ -35,13 +34,6 @@
   "scripts": {
     "start": "node index.js",
     "commit": "cz"
-  },
-  "devDependencies": {
-    "cz-conventional-changelog": "^3.3.0"
-  },
-  "config": {
-    "commitizen": {
-      "path": "./node_modules/cz-conventional-changelog"
-    }
   }
+ 
 }

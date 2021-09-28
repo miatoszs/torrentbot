@@ -29,8 +29,8 @@ const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 // client.on("warn", (info) => console.log(info));
 // client.on("error", console.error);
 
-["status", "buttons"].forEach(handler => {
-    require(`./handlers/${handler}`)(client);
+["status", "buttons"].forEach(events => {
+    require(`./events/${events}`)(client);
 });
 /**
  * Import all commands
