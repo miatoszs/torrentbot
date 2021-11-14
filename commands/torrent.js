@@ -4,6 +4,7 @@ const torrent = require("../util/torrent");
 
 module.exports = {
     name: "torrent",
+    aliases: ['1337x'],
     description: "search torrent",
     usage: ".torrent <torrent name>",
   async execute(message, args) {

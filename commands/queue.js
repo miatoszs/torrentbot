@@ -1,24 +1,22 @@
 const { MessageEmbed } = require("discord.js");
-const i18n = require("../util/i18n");
 
 module.exports = {
   name: "queue",
-  cooldown: 5,
   aliases: ["q"],
-  description: i18n.__("queue.description"),
+  description: "Show the music queue and now playing.",
   async execute(message) {
     const permissions = message.channel.permissionsFor(message.client.user);
     if (!permissions.has(["MANAGE_MESSAGES", "ADD_REACTIONS"]))
-      return message.reply(i18n.__("queue.missingPermissionMessage"));
+      return message.reply("Missing permission to manage messages or add reactions");
 
     const queue = message.client.queue.get(message.guild.id);
-    if (!queue || !queue.songs.length) return message.channel.send(i18n.__("queue.errorNotQueue"));
+    if (!queue) return message.channel.send("❌ **Nothing playing in this server**");
 
     let currentPage = 0;
     const embeds = generateQueueEmbed(message, queue.songs);
 
     const queueEmbed = await message.channel.send(
-      `**${i18n.__mf("queue.currentPage")} ${currentPage + 1}/${embeds.length}**`,
+      `**Current Page - ${currentPage + 1}/${embeds.length}**`,
       embeds[currentPage]
     );
 
@@ -40,18 +38,12 @@ module.exports = {
         if (reaction.emoji.name === "➡️") {
           if (currentPage < embeds.length - 1) {
             currentPage++;
-            queueEmbed.edit(
-              i18n.__mf("queue.currentPage", { page: currentPage + 1, length: embeds.length }),
-              embeds[currentPage]
-            );
+            queueEmbed.edit(`**Current Page - ${currentPage + 1}/${embeds.length}**`, embeds[currentPage]);
           }
         } else if (reaction.emoji.name === "⬅️") {
           if (currentPage !== 0) {
             --currentPage;
-            queueEmbed.edit(
-              i18n.__mf("queue.currentPage", { page: currentPage + 1, length: embeds.length }),
-              embeds[currentPage]
-            );
+            queueEmbed.edit(`**Current Page - ${currentPage + 1}/${embeds.length}**`, embeds[currentPage]);
           }
         } else {
           collector.stop();
@@ -78,13 +70,10 @@ function generateQueueEmbed(message, queue) {
     const info = current.map((track) => `${++j} - [${track.title}](${track.url})`).join("\n");
 
     const embed = new MessageEmbed()
-      .setTitle(i18n.__("queue.embedTitle"))
+      .setTitle("Song Queue\n")
       .setThumbnail(message.guild.iconURL())
       .setColor("#2756bc")
-      .setAuthor("nowplaying",`https://cdn.discordapp.com/attachments/718452489342550037/887806846499442718/disk.gif`)
-      .setDescription(
-        i18n.__mf("queue.embedCurrentSong", { title: queue[0].title, url: queue[0].url, info: info })
-      )
+      .setDescription(`**Current Song - [${queue[0].title}](${queue[0].url})**\n\n${info}`)
       .setTimestamp();
     embeds.push(embed);
   }
