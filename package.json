@@ -12,6 +12,7 @@
     "@discordjs/opus": "^0.7.0",
     "ascii-table": "^0.0.9",
     "cpu-stat": "^2.0.1",
+    "discord-buttons": "^4.0.0",
     "discord-ytdl-core": "^5.0.4",
     "discord.js": "^12.5.1",
     "dotenv": "^8.2.0",

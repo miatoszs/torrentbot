@@ -1,4 +1,4 @@
-const { TOKEN, PREFIX } = require("../util/Util");
+
 module.exports = (client)=>{
   client.on("ready", () => {
     console.log(`${client.user.username} ready!`);
