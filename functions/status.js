@@ -1,7 +1,7 @@
 
 module.exports = (client)=>{
   client.on("ready", () => {
-    console.log(`${client.user.username} ready!`);
+    console.log(`Bot is ready. (${client.guilds.cache.size} szerver - ${client.channels.cache.size} csatorna - ${client.users.cache.size} felhasználó)`);
     const statusArray = ['.torrent, WATCHING', '.play, LISTENING', '.help, PLAYING',`${client.guilds.cache.size} Servers, WATCHING`,];
     setInterval(() => {
           client.user.setStatus('dnd');
