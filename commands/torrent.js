@@ -1,51 +1,61 @@
-const Discord = require("discord.js");
-const torrent_module = require("../util/torrent");
-const torrent = require("../util/torrent");
+const { SlashCommandBuilder } = require('@discordjs/builders');
+const torrent_module = require('discord-torrent');
 
 module.exports = {
-    name: "torrent",
-    aliases: ['1337x'],
-    description: "search torrent",
-    usage: ".torrent <torrent name>",
-  async execute(message, args) {
-    try {
-      message.channel.send("`Searching...`")
-      let query = "";
-      args.map(string=> {
-          query += " " + string;
-      });
-      torrent_module.grabTorrents(query)
-      .then(torrentArray => {
+    data: new SlashCommandBuilder()
+        .setName('torrent')
+        .setDescription('Search for torrents')
+        .addStringOption(option => 
+            option.setName('search')
+                  .setDescription('The term you want to search for')
+                  .setRequired(true)),
 
-          if (torrentArray.length > 0)
-          {
+    async execute(interaction) {
+        await interaction.deferReply();
 
-              let torrentList = new Discord.MessageEmbed();
-              torrentList.setAuthor(`@${message.author.username}`);
-              torrentArray.map((torrent) => {
-                  torrentList.addFields(
-                      { name : `${torrent.number}. ${torrent.title}`, value : `${torrent.magnet} | Seeders: ${torrent.seeds} | Size: ${torrent.size} | Time: ${torrent.time}`}
-                  )
-              });
-              message.channel.send(torrentList); //Send them the list of torrents in the channel
+        const searchTerm = interaction.options.getString('search');
+        
+        try {
+            const torrentArray = await torrent_module.grabTorrents(searchTerm);
+            
+            if (torrentArray.length > 0) {
+                let fields = [];
 
+                torrentArray.forEach((torrent, index) => {
+                    fields.push({ name: '\u200B', value: '\u200B', inline: false }); // This adds a blank field, effectively a line separator.
+                    fields.push({
+                        name: `${index + 1}. ${torrent.title}`, 
+                        value: `Magnet: [Link](${torrent.magnet})\nSeeders: \`${torrent.seeds}\`\nSize: \`${torrent.size}\`\nTime: \`${torrent.time}\``,  
+                        inline: false
+                    });
+                });
 
-          }
-          else
-          {
-              message.channel.send(
-                  new Discord.MessageEmbed()
-                      .setTitle("Not found")
-                      .setAuthor(message.author.username)
-                      .addFields(
-                          { name : "Message", value: "Torrent not found!."},
-                      )
-                      .setFooter(Date())
-              );
-          }
+                const torrentEmbed = {
+                    color: parseInt('0099ff', 16),
+                    title: `Torrent results for "${searchTerm}"`,
+                    fields: fields,
+                    timestamp: new Date()
+                };
 
-      });
-    } catch(err) {
-      message.channel.send("There was an error executing this command!!")
+                await interaction.editReply({ embeds: [torrentEmbed] });
+            } else {
+                await interaction.editReply('Torrent not found!');
+            }
+        } catch (error) {
+            console.error('Error fetching torrents:', error);
+
+            const errorEmbed = {
+                color: parseInt('ff0000', 16),
+                title: 'Error',
+                description: 'An error occurred while fetching torrents.',
+                timestamp: new Date()
+            };
+
+            try {
+                await interaction.editReply({ embeds: [errorEmbed] });
+            } catch (err) {
+                console.error('Error sending edited reply:', err);
+            }
+        }
     }
-  }}
+};

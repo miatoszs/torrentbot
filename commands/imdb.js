@@ -1,44 +1,55 @@
-const discord = require("discord.js");
-const imdb = require("imdb-api");
+const { SlashCommandBuilder } = require('@discordjs/builders');
+const IMDb = require('imdb-api');
+const { apiKey } = require('../config.json'); // Assuming you've added your API key as "apiKey" in config.json
+
+const cli = new IMDb.Client({ apiKey });
 
 module.exports = {
-name: "imdb",
-aliases:["imdb"],
+    data: new SlashCommandBuilder()
+        .setName('imdb')
+        .setDescription('Search for movies or series on IMDb')
+        .addStringOption(option => 
+            option.setName('search')
+                  .setDescription('The term you want to search for')
+                  .setRequired(true)),
 
-  description: "Search movie or series",
-  usage: ".imdb <movie title>",
-  async execute(message, args) {
-    try{
-      if(!args.length) {
-        return message.channel.send("What is the title of the movie or series?")
-      }
+    async execute(interaction) {
+        const searchTerm = interaction.options.getString('search');
+        
+        try {
+            const searchResults = await cli.search({ name: searchTerm });
+            const topResult = searchResults.results[0];
 
-      const imob = new imdb.Client({apiKey: "5e36f0db"}) //You need to paste you imdb api
+            if (topResult) {
+                const details = await cli.get({ id: topResult.imdbid });
 
-      let movie = await imob.get({'name': args.join(" ")})
+                const embed = {
+                    color: parseInt('0099ff', 16),
+                    title: details.title,
+                    description: details.plot,
+                    fields: [
+                        { name: 'Country', value: details.country || 'N/A', inline: true },
+                        { name: 'Language', value: details.languages || 'N/A', inline: true },
+                        { name: 'Type', value: details.type, inline: true },
+                        { name: 'Rating', value: `${details.rating}/10` || 'N/A', inline: true },
+                    ],
+                    image: { url: details.poster },
+                    timestamp: new Date()
+                };
 
-      let embed = new discord.MessageEmbed()
-      .setTitle(movie.title)
-      .setColor("#2756bc")
-      .setImage(movie.poster)
-      .setTimestamp()
-      .setDescription(movie.plot)
+                await interaction.reply({ embeds: [embed] });
+            } else {
+                await interaction.reply('Movie not found.');
+            }
+        } catch (error) {
+            console.error('Error fetching IMDb data:', error);
 
-      .addField("Country", movie.country, true)
-      .addField("Language", movie.languages, true)
-      .addField("Type", movie.type, true)
-      .addField("Rating:", `${movie.rating}`, true);
-
-
-      message.channel.send(embed)
-    }catch{
-      message.channel.send("`i can't find this`")
+            // Check if the error is a "Movie not found!" error
+            if (error.message.includes('Movie not found!')) {
+                await interaction.reply('Movie not found.');
+            } else {
+                await interaction.reply('An error occurred while fetching IMDb data.');
+            }
+        }
     }
-
-
-
-
-
-  }
-
-}
+};

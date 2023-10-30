@@ -1,11 +1,9 @@
 {
-  "TOKEN": "",
-  "YOUTUBE_API_KEY": "",
-  "SOUNDCLOUD_CLIENT_ID": "",
-  "MAX_PLAYLIST_SIZE": 10,
-  "PREFIX": ".",
-  "PRUNING": false,
-  "LOCALE": "en",
-  "STAY_TIME": 30,
-  "DEFAULT_VOLUME": 100
-}
+    "token-beta": "ODEzMDM5ODMzNTc1ODUwMDA1.GypRA5.w8_RGmDA48y-2lpckCQg4ng0wpodsSKqc3VcrU",
+    "token" : "NzgwODgyMTg1ODk2NTkxMzYw.GXCoXu.saDyyjyhJdm8IJEanZcTJuNO-3a3d8HbWLkiBQ",
+    "clientId": "780882185896591360",
+    "clientId-beta": "813039833575850005",
+    "guildId": "909414332146802729",
+    "apiKey": "5e36f0db" 
+  }
+  
