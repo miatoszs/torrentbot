@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, MessageEmbed } = require('discord.js'); // Use MessageEmbed instead of EmbedBuilder
+const { SlashCommandBuilder, MessageEmbed } = require('discord.js'); 
 const puppeteer = require('puppeteer');
 
 module.exports = {
@@ -6,7 +6,7 @@ module.exports = {
         .setName("chatgpt")
         .setDescription("Generate a chat with GPT-3")
         .addStringOption(option => 
-            option.setName('prompt') // Changed 'promt' to 'prompt' for consistency
+            option.setName('prompt') 
             .setDescription('The prompt for ai')
             .setRequired(true)
         ),
@@ -20,7 +20,7 @@ module.exports = {
         const page = await browser.newPage();
 
         await page.goto('https://chat-app-f2d296.zapier.app/');
-        const textBoxSelector = 'textarea[aria-label="chatbot-user-prompt"]'; // Fixed typo: 'area-label' to 'aria-label'
+        const textBoxSelector = 'textarea[aria-label="chatbot-user-prompt"]'; 
         await page.waitForSelector(textBoxSelector);
         await page.type(textBoxSelector, prompt);
         
@@ -36,7 +36,7 @@ module.exports = {
         },30000);
         await browser.close();
 
-        // Changed 'tesid' to 'testid'
+
 
 
         value.shift();
