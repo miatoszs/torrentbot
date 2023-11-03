@@ -1,53 +1,54 @@
-// const { SlashCommandBuilder } = require('@discordjs/builders');
-// const { exec } = require('child_process');
-
-// function askPython(question, callback) {
-//     exec(`python answer.py "${question}"`, (error, stdout, stderr) => {
-//         if (error) {
-//             console.error(`exec error: ${error}`);
-//             callback(error, null);
-//             return;
-//         }
-//         callback(null, stdout);
-//     });
-// }
-
-// module.exports = {
-//     data: new SlashCommandBuilder()
-//         .setName('ask')
-//         .setDescription('Ask the AI a question.')
-//         .addStringOption(option => 
-//             option.setName('question')
-//                   .setDescription('Your question for the AI.')
-//                   .setRequired(true)),
-    
-//     async execute(interaction) {
-//         const question = interaction.options.getString('question');
-        
-//         // Immediately acknowledge the interaction
-//         await interaction.deferReply();
-        
-//         askPython(question, async (err, answer) => {
-//             if (err) {
-//                 await interaction.editReply({ content: 'There was an error processing your question.' });
-//                 return;
-//             }
-//             await interaction.editReply(answer.trim());
-//         });
-//     }
-// };
-
-
-
-const { SlashCommandBuilder } = require('@discordjs/builders');
+const { SlashCommandBuilder, MessageEmbed } = require('discord.js'); // Use MessageEmbed instead of EmbedBuilder
+const puppeteer = require('puppeteer');
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('ask')
-        .setDescription('Ask the AI a question.'),
-
+        .setName("chatgpt")
+        .setDescription("Generate a chat with GPT-3")
+        .addStringOption(option => 
+            option.setName('prompt') // Changed 'promt' to 'prompt' for consistency
+            .setDescription('The prompt for ai')
+            .setRequired(true)
+        ),
     async execute(interaction) {
-        const sent = await interaction.reply({ content: 'We are working on this command', fetchReply: true });
+        await interaction.deferReply({ content: `Loading your response.... this could take some time`, ephemeral: false });
+
+        // Correct way to get the 'prompt' string option from the interaction
+        const prompt = interaction.options.getString('prompt'); 
+
+        const browser = await puppeteer.launch({ headless: true });
+        const page = await browser.newPage();
+
+        await page.goto('https://chat-app-f2d296.zapier.app/');
+        const textBoxSelector = 'textarea[aria-label="chatbot-user-prompt"]'; // Fixed typo: 'area-label' to 'aria-label'
+        await page.waitForSelector(textBoxSelector);
+        await page.type(textBoxSelector, prompt);
         
-    }
-};
+        await page.keyboard.press('Enter');
+
+        await page.waitForSelector('[data-testid="final-bot-response"] p'); 
+        var value = await page.$$eval('[data-testid="final-bot-response"]', async (elements) => {
+            return elements.map((element) => element.textContent);
+        
+        });
+        setTimeout(async () => {
+            if (value.length ==0) return await interaction.editReply({ content: `There was an error getting the response, try again later!`});
+        },30000);
+        await browser.close();
+
+        // Changed 'tesid' to 'testid'
+
+
+        value.shift();
+        const Embed = {
+            color: 0x0000FF,
+            description: `\`\`\`${value.join(`\n\n\n\n`)}\`\`\``,
+            timestamp: new Date(),
+        };
+            
+
+        await interaction.editReply({ embeds: [Embed] });
+
+        await browser.close();
+    } 
+}
