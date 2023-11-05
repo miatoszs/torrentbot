@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const torrent_module = require('discord-torrent');
+const nsfwWordsData = require('../nsfwWords.json'); // Import the JSON data
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -13,8 +14,15 @@ module.exports = {
     async execute(interaction) {
         await interaction.deferReply();
 
-        const searchTerm = interaction.options.getString('search');
-        
+        const searchTerm = interaction.options.getString('search').toLowerCase();
+
+        // Use the words from the JSON data for the check
+        const isNSFWSearch = nsfwWordsData.words.some(word => searchTerm.includes(word));
+
+        if (isNSFWSearch && !interaction.channel.nsfw) {
+            return await interaction.editReply('This search is only allowed in NSFW channels.');
+        }
+
         try {
             const torrentArray = await torrent_module.grabTorrents(searchTerm);
             
@@ -59,3 +67,4 @@ module.exports = {
         }
     }
 };
+
