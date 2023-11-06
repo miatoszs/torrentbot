@@ -1,6 +1,10 @@
 const { Client, GatewayIntentBits, REST, Routes } = require('discord.js');
-const { token, clientId } = require('./config.json');
+const { token, clientId, topGgToken } = require('./config.json');
 const fs = require('fs');
+
+const { AutoPoster } = require('topgg-autoposter')
+
+
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 client.commands = new Map();
@@ -41,6 +45,8 @@ client.once('ready', async () => {
     }
 });
 
+
+
 client.on('interactionCreate', async interaction => {
     if (!interaction.isCommand()) return;
 
@@ -55,4 +61,14 @@ client.on('interactionCreate', async interaction => {
     }
 });
 
+const ap = AutoPoster(topGgToken, client)
+
+ap.on('posted', () => {
+  console.log('Posted stats to Top.gg!')
+})
+
+ap.on('error', err => {
+    console.warn('Error posting stats to Top.GG API: ', err)
+})
 client.login(token);
+

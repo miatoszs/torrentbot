@@ -3,6 +3,8 @@
     "token" : "BOT_TOKEN",
     "clientId": "CLIENT_ID",
     "guildId": "GUILD_ID",
-    "apiKey": "IMDB_API_KEY" 
+    "apiKey": "IMDB_API_KEY",
+    "topGgToken": "your_topgg_api_token"
+
   }
   
