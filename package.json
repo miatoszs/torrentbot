@@ -1,3 +1,4 @@
+
 {
   "name": "torrentbot",
   "version": "3.0.1",
@@ -9,13 +10,10 @@
   },
   "author": ".Áldó#6194",
   "dependencies": {
-    "discord-torrent": "^1.0.7",
-    "discord.js": "^14.12.1",
+    "@dil5han/1337x": "^1.4.4",
+    "discord.js": "^14.14.1",
     "imdb-api": "^4.4.1",
-    "natural": "^6.8.0",
-    "torrent-search-api": "^2.1.4",
-    "urlencode": "^2.0.0",
-    "puppeteer": "^21.5.0",
+    "puppeteer": "^21.6.0",
+    "topgg-autoposter": "^2.0.1"
   }
 }
-
