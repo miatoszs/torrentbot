@@ -1,70 +1,64 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const torrent_module = require('discord-torrent');
-const nsfwWordsData = require('../nsfwWords.json'); // Import the JSON data
+const { CommandInteraction } = require('discord.js');
+const { t1337x } = require('@dil5han/1337x');
+const fetch = require('node-fetch');
 
 module.exports = {
-    data: new SlashCommandBuilder()
-        .setName('torrent')
-        .setDescription('Search for torrents')
-        .addStringOption(option => 
-            option.setName('search')
-                  .setDescription('The term you want to search for')
-                  .setRequired(true)),
+  data: new SlashCommandBuilder()
+    .setName('torrent')
+    .setDescription('Searches for torrents')
+    .addStringOption(option =>
+      option.setName('search')
+        .setDescription('The query to search for')
+        .setRequired(true)),
 
-    async execute(interaction) {
-        await interaction.deferReply();
+  async execute(interaction) {
+    await interaction.deferReply();
+    const query = interaction.options.getString('search');
 
-        const searchTerm = interaction.options.getString('search').toLowerCase();
+    try {
+      const data = await t1337x(query, '1');
+      if (data === null || data.length === 0) {
+        return interaction.editReply('No search results found.');
+      }
 
-        // Use the words from the JSON data for the check
-        const isNSFWSearch = nsfwWordsData.words.some(word => searchTerm.includes(word));
+      // Parallelizing the API calls to shorten URLs
+      const fetchPromises = data.slice(0, 5).map(torrent => {
+        const encoded = encodeURIComponent(torrent.Mag_torrent_url);
+        return fetch(`http://mgnet.me/api/create?&format=json&opt=&m=${encoded}`, {
+          "headers": {
+            "accept": "text/javascript, application/javascript, application/ecmascript, application/x-ecmascript, */*; q=0.01",
+            "x-requested-with": "XMLHttpRequest"
+          },
+          "method": "GET",
+          "mode": "cors"
+        }).then(response => response.json());
+      });
 
-        if (isNSFWSearch && !interaction.channel.nsfw) {
-            return await interaction.editReply('This search is only allowed in NSFW channels.');
-        }
+      const shortenedUrls = await Promise.all(fetchPromises);
 
-        try {
-            const torrentArray = await torrent_module.grabTorrents(searchTerm);
-            
-            if (torrentArray.length > 0) {
-                let fields = [];
+      const embedFields = data.slice(0, 5).map((torrent, index) => {
+        const shortenedUrl = shortenedUrls[index].shorturl || 'Shortening failed';
+        return {
+          name: `${torrent.Name}`, 
+          value: `Magnet: [Link](${shortenedUrl})\nSeeders: \`${torrent.Seeds}\`\nDownloads: \`${torrent.Downloads}\`\nSize: \`${torrent.Size}\`\nUploaded: \`${torrent.Date_uploaded}\``, 
+          inline: false
+        };
+      });
 
-                torrentArray.forEach((torrent, index) => {
-                    fields.push({ name: '\u200B', value: '\u200B', inline: false }); // This adds a blank field, effectively a line separator.
-                    fields.push({
-                        name: `${index + 1}. ${torrent.title}`, 
-                        value: `Magnet: [Link](${torrent.magnet})\nSeeders: \`${torrent.seeds}\`\nSize: \`${torrent.size}\`\nTime: \`${torrent.time}\``,  
-                        inline: false
-                    });
-                });
+      const embed = {
+        color: parseInt('0099ff', 16),
+        title: `Torrent results for "${query}"`,
+        description: "Here are the search results",
+        fields: embedFields,
+        timestamp: new Date(),
+      };
 
-                const torrentEmbed = {
-                    color: parseInt('0099ff', 16),
-                    title: `Torrent results for "${searchTerm}"`,
-                    fields: fields,
-                    timestamp: new Date()
-                };
-
-                await interaction.editReply({ embeds: [torrentEmbed] });
-            } else {
-                await interaction.editReply('Torrent not found!');
-            }
-        } catch (error) {
-            console.error('Error fetching torrents:', error);
-
-            const errorEmbed = {
-                color: parseInt('ff0000', 16),
-                title: 'Error',
-                description: 'An error occurred while fetching torrents.',
-                timestamp: new Date()
-            };
-
-            try {
-                await interaction.editReply({ embeds: [errorEmbed] });
-            } catch (err) {
-                console.error('Error sending edited reply:', err);
-            }
-        }
+      return interaction.editReply({ embeds: [embed] });
+    } catch (error) {
+      console.error(error);
+      return interaction.editReply('There was an error while executing this command!');
     }
+  },
 };
 
